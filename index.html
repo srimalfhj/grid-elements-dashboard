@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Eastern Grid Elements Dashboard</title>
+    <meta name="theme-color" content="#101827" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">EG</div>
+          <div>
+            <h1>Grid Elements</h1>
+            <p>Category dashboards</p>
+          </div>
+        </div>
+
+        <nav id="categoryNav" class="category-nav" aria-label="Categories"></nav>
+
+        <div class="admin-card">
+          <div>
+            <span class="eyebrow">Admin</span>
+            <strong id="adminState">Viewer mode</strong>
+          </div>
+          <button id="adminToggle" class="ghost-button" type="button">Login</button>
+        </div>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <span class="eyebrow">Asset intelligence</span>
+            <h2 id="pageTitle">All Categories</h2>
+          </div>
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+            </svg>
+            <input id="globalSearch" type="search" placeholder="Search element, owner, voltage, state..." />
+          </div>
+        </header>
+
+        <section class="stats-grid" id="statsGrid" aria-label="Summary statistics"></section>
+
+        <section class="dashboard-grid">
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <div>
+                <span class="eyebrow">Distribution</span>
+                <h3 id="primaryChartTitle">Category Size</h3>
+              </div>
+              <div id="primaryChartControls" class="chart-controls"></div>
+            </div>
+            <div id="categoryChart" class="bar-chart"></div>
+          </div>
+
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <div>
+                <span class="eyebrow">Breakdown</span>
+                <h3 id="breakdownTitle">Voltage / Type Mix</h3>
+              </div>
+              <div id="secondaryChartControls" class="chart-controls"></div>
+            </div>
+            <div id="breakdownChart" class="donut-wrap"></div>
+          </div>
+        </section>
+
+        <section class="panel data-panel">
+          <div class="panel-head">
+            <div>
+              <span class="eyebrow">Searchable database</span>
+              <h3 id="resultTitle">All Records</h3>
+            </div>
+            <div class="actions">
+              <button id="addRecordBtn" class="primary-button hidden" type="button">Add Record</button>
+              <button id="exportBtn" class="ghost-button" type="button">Export JSON</button>
+            </div>
+          </div>
+          <div id="recordsList" class="records-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="detailDialog" class="record-dialog">
+      <form method="dialog">
+        <div class="dialog-head">
+          <div>
+            <span id="dialogCategory" class="eyebrow"></span>
+            <h3 id="dialogTitle"></h3>
+          </div>
+          <button class="icon-button" type="submit" aria-label="Close">×</button>
+        </div>
+        <div id="dialogBody" class="dialog-body"></div>
+        <div id="dialogActions" class="dialog-actions"></div>
+      </form>
+    </dialog>
+
+    <dialog id="adminDialog" class="admin-dialog">
+      <form id="adminForm">
+        <div class="dialog-head">
+          <div>
+            <span class="eyebrow">Secure editing</span>
+            <h3>Admin Login</h3>
+          </div>
+          <button class="icon-button" type="button" data-close-admin aria-label="Close">×</button>
+        </div>
+        <label>
+          Username
+          <input id="adminUser" autocomplete="username" required />
+        </label>
+        <label>
+          Password
+          <input id="adminPass" type="password" autocomplete="current-password" required />
+        </label>
+        <p class="hint">Default local login: admin / elements@2026. Replace this with real authentication before public deployment.</p>
+        <button class="primary-button" type="submit">Unlock Editing</button>
+      </form>
+    </dialog>
+
+    <script src="config.js"></script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/service-worker.js");
+        });
+      }
+    </script>
+  </body>
+</html>
