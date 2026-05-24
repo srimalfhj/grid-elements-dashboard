@@ -707,6 +707,12 @@ els.recordsList.addEventListener("click", (event) => {
 });
 
 els.detailDialog.addEventListener("click", (event) => {
+  const fieldEdit = event.target.closest(".field-edit");
+  if (fieldEdit && event.target === fieldEdit) {
+    const input = fieldEdit.querySelector("input, textarea");
+    if (input) input.focus();
+  }
+
   const edit = event.target.closest("[data-edit-record]");
   const save = event.target.closest("[data-save-record]");
   const cancel = event.target.closest("[data-cancel-edit]");
