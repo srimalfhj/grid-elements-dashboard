@@ -64,7 +64,16 @@ async function loadMongoData(config) {
 
   try {
     const response = await fetch(`${apiRoot}/api/assets`);
-    if (!response.ok) throw new Error(`API returned ${response.status}`);
+    if (!response.ok) {
+      let detail = `API returned ${response.status}`;
+      try {
+        const errorPayload = await response.json();
+        if (errorPayload.error) detail = errorPayload.error;
+      } catch {
+        detail = `API returned ${response.status}`;
+      }
+      throw new Error(detail);
+    }
     const data = await response.json();
     const byCategory = data.reduce((acc, item) => {
       acc[item.categoryId] ||= [];
@@ -543,7 +552,9 @@ function openRecord(recordId, editMode = false) {
       : "";
   }
 
-  els.detailDialog.showModal();
+  if (!els.detailDialog.open) {
+    els.detailDialog.showModal();
+  }
 }
 
 function renderEditForm(category, record = null) {
@@ -670,7 +681,13 @@ els.detailDialog.addEventListener("click", (event) => {
   const remove = event.target.closest("[data-delete-record]");
   if (edit) openRecord(edit.dataset.editRecord, true);
   if (save) saveRecord(save.dataset.saveRecord, save.dataset.new === "true");
-  if (cancel) openRecord(cancel.dataset.cancelEdit);
+  if (cancel) {
+    if (findRecord(cancel.dataset.cancelEdit)) {
+      openRecord(cancel.dataset.cancelEdit);
+    } else {
+      els.detailDialog.close();
+    }
+  }
   if (remove) deleteRecord(remove.dataset.deleteRecord);
 });
 
