@@ -1,11 +1,14 @@
-const CACHE_NAME = "grid-elements-v1";
+const CACHE_NAME = "grid-elements-v2";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
   "/styles.css",
   "/app.js",
+  "/app.js?v=20260524-editfix",
   "/config.js",
+  "/config.js?v=20260524-editfix",
   "/data.js",
+  "/data.js?v=20260524-editfix",
   "/manifest.webmanifest",
   "/icons/icon.svg"
 ];
@@ -31,13 +34,12 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
+    fetch(event.request)
+      .then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
         return response;
-      });
-    })
+      })
+      .catch(() => caches.match(event.request))
   );
 });

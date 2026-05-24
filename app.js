@@ -116,7 +116,16 @@ async function persistRecord(category, record) {
         fields: record.fields,
       }),
     });
-    if (!response.ok) alert(`MongoDB update failed: ${response.status}`);
+    if (!response.ok) {
+      let detail = `MongoDB update failed: ${response.status}`;
+      try {
+        const payload = await response.json();
+        if (payload.error) detail = payload.error;
+      } catch {
+        detail = `MongoDB update failed: ${response.status}`;
+      }
+      throw new Error(detail);
+    }
     return;
   }
 }
@@ -127,7 +136,16 @@ async function removeRecordOnline(recordId) {
     const apiBaseUrl = (window.ELEMENTS_APP_CONFIG.apiBaseUrl || "").replace(/\/$/, "");
     const apiRoot = apiBaseUrl || window.location.origin;
     const response = await fetch(`${apiRoot}/api/assets/${encodeURIComponent(recordId)}`, { method: "DELETE" });
-    if (!response.ok) alert(`MongoDB delete failed: ${response.status}`);
+    if (!response.ok) {
+      let detail = `MongoDB delete failed: ${response.status}`;
+      try {
+        const payload = await response.json();
+        if (payload.error) detail = payload.error;
+      } catch {
+        detail = `MongoDB delete failed: ${response.status}`;
+      }
+      throw new Error(detail);
+    }
     return;
   }
 }
@@ -592,39 +610,53 @@ function renderEditForm(category, record = null) {
 }
 
 async function saveRecord(recordId, isNew) {
-  const category = state.categories.find((item) => item.id === els.detailDialog.dataset.editCategory);
-  const fields = Object.fromEntries(
-    [...els.dialogBody.querySelectorAll("[data-field]")].map((input) => [input.dataset.field, input.value.trim()])
-  );
-  const displayName =
-    category.nameFields.map((field) => fields[field]).find(Boolean) ||
-    fields.Name ||
-    fields.Station ||
-    `${category.title} Record`;
+  try {
+    const category = state.categories.find((item) => item.id === els.detailDialog.dataset.editCategory);
+    if (!category) throw new Error("No category selected for this record.");
 
-  if (isNew) {
-    category.records.unshift({ id: recordId, categoryId: category.id, displayName, fields });
-  } else {
-    const record = category.records.find((item) => item.id === recordId);
-    record.displayName = displayName;
-    record.fields = fields;
+    const fields = Object.fromEntries(
+      [...els.dialogBody.querySelectorAll("[data-field]")].map((input) => [input.dataset.field, input.value.trim()])
+    );
+    const displayName =
+      category.nameFields.map((field) => fields[field]).find(Boolean) ||
+      fields.Name ||
+      fields.Station ||
+      `${category.title} Record`;
+
+    let savedRecord;
+    if (isNew) {
+      savedRecord = { id: recordId, categoryId: category.id, displayName, fields };
+      category.records.unshift(savedRecord);
+    } else {
+      savedRecord = category.records.find((item) => item.id === recordId);
+      if (!savedRecord) throw new Error("The selected record was not found.");
+      savedRecord.displayName = displayName;
+      savedRecord.fields = fields;
+    }
+
+    await persistRecord(category, savedRecord);
+    els.detailDialog.close();
+    render();
+    alert("Record saved successfully.");
+  } catch (error) {
+    alert(`Save failed: ${error.message}`);
   }
-
-  const savedRecord = isNew ? category.records[0] : category.records.find((item) => item.id === recordId);
-  await persistRecord(category, savedRecord);
-  els.detailDialog.close();
-  render();
 }
 
 async function deleteRecord(recordId) {
-  const found = findRecord(recordId);
-  if (!found) return;
-  const ok = confirm(`Delete "${found.record.displayName}" from ${found.category.title}?`);
-  if (!ok) return;
-  found.category.records = found.category.records.filter((record) => record.id !== recordId);
-  await removeRecordOnline(recordId);
-  els.detailDialog.close();
-  render();
+  try {
+    const found = findRecord(recordId);
+    if (!found) return;
+    const ok = confirm(`Delete "${found.record.displayName}" from ${found.category.title}?`);
+    if (!ok) return;
+    found.category.records = found.category.records.filter((record) => record.id !== recordId);
+    await removeRecordOnline(recordId);
+    els.detailDialog.close();
+    render();
+    alert("Record deleted successfully.");
+  } catch (error) {
+    alert(`Delete failed: ${error.message}`);
+  }
 }
 
 function exportJson() {
