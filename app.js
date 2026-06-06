@@ -1,7 +1,7 @@
 const STORE_KEY = "elements-dashboard-records-v1";
 const ADMIN_KEY = "elements-dashboard-admin-v1";
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "elements@2026";
+const ADMIN_USER = "srimalya";
+const ADMIN_PASS = "srimalya@2026";
 
 const state = {
   activeCategory: "all",
@@ -708,9 +708,11 @@ els.recordsList.addEventListener("click", (event) => {
 
 els.detailDialog.addEventListener("click", (event) => {
   const fieldEdit = event.target.closest(".field-edit");
-  if (fieldEdit && event.target === fieldEdit) {
+  if (fieldEdit) {
+    event.stopPropagation();
     const input = fieldEdit.querySelector("input, textarea");
-    if (input) input.focus();
+    if (input && event.target === fieldEdit) input.focus();
+    return;
   }
 
   const edit = event.target.closest("[data-edit-record]");
